@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "SyslogDotnet.Client.Cmd": {
+      "commandName": "Project"
+    }
+  }
+}
