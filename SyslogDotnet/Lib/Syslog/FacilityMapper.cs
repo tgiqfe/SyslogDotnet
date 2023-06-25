@@ -10,7 +10,7 @@ namespace SyslogDotnet.Lib.Syslog
     {
         private static Dictionary<Facility, string[]> _map = null;
 
-        public static Facility ToFacility(string text)
+        public static Facility ToFacility(string text, Facility defualtFacility = Facility.UserLevelMessages)
         {
             _map ??= new Dictionary<Facility, string[]>()
             {
@@ -48,7 +48,7 @@ namespace SyslogDotnet.Lib.Syslog
                     return pair.Key;
                 }
             }
-            return Facility.UserLevelMessages;
+            return defualtFacility;
         }
 
         public static Facility ToFacility(int num)

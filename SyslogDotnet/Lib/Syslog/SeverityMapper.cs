@@ -10,7 +10,7 @@ namespace SyslogDotnet.Lib.Syslog
     {
         private static Dictionary<Severity, string[]> _map = null;
 
-        public static Severity ToSeverity(string text)
+        public static Severity ToSeverity(string text, Severity defaultSeverity = Severity.Informational)
         {
             _map ??= new Dictionary<Severity, string[]>()
             {
@@ -31,7 +31,7 @@ namespace SyslogDotnet.Lib.Syslog
                     return pair.Key;
                 }
             }
-            return Severity.Informational;
+            return defaultSeverity;
         }
 
         public static Severity ToSeverity(int num)

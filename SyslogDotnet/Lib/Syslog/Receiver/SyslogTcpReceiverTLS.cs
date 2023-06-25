@@ -87,6 +87,7 @@ namespace SyslogDotnet.Lib.Syslog.Receiver
                             sysMsg = SyslogMessage.Deserialize(ms.ToArray());
                             sysMsg.RemoteIPAddress = address.ToString();
                             sysMsg.RemotePort = port;
+                            sysMsg.TransferType = "TCP,SSL" + (ClientCertificateRequired ? ",ClCrtReq" : "");
                             _ = Task.Run(() =>
                             {
                                 ReceiveProcess(sysMsg);
@@ -100,7 +101,6 @@ namespace SyslogDotnet.Lib.Syslog.Receiver
                 Console.WriteLine("TCP待ち受け終了");
             }
         }
-
 
         private bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {

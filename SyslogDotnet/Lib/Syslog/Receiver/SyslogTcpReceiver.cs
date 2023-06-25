@@ -50,6 +50,7 @@ namespace SyslogDotnet.Lib.Syslog.Receiver
                             sysMsg = SyslogMessage.Deserialize(ms.ToArray());
                             sysMsg.RemoteIPAddress = address.ToString();
                             sysMsg.RemotePort = port;
+                            sysMsg.TransferType = "TCP";
                             _ = Task.Run(() =>
                             {
                                 ReceiveProcess(sysMsg);

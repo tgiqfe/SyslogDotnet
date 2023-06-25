@@ -10,7 +10,7 @@ namespace SyslogDotnet.Lib.Syslog
     {
         private static Dictionary<Format, string[]> _map = null;
 
-        public static Format ToFormat(string text)
+        public static Format ToFormat(string text, Format defaultFormat = Format.RFC3164)
         {
             _map ??= new Dictionary<Format, string[]>()
             {
@@ -25,7 +25,7 @@ namespace SyslogDotnet.Lib.Syslog
                     return pair.Key;
                 }
             }
-            return Format.RFC3164;
+            return defaultFormat;
         }
     }
 }
