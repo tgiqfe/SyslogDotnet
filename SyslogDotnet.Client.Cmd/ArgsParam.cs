@@ -140,7 +140,7 @@ namespace SyslogDotnet.Client.Cmd
             {
                 if (this.UseSsl)
                 {
-                    if (this.CertFile == null)
+                    if (string.IsNullOrEmpty(this.CertFile))
                     {
                         //  TCP,暗号化有り,クライアント証明書無し
                         return new SyslogTcpSenderTLS(this.ServerInfo.Server, this.ServerInfo.Port)
