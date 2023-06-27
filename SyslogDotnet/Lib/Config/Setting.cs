@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace SyslogDotnet.Lib.Config
 {
-    internal class Setting
+    public class Setting
     {
         /// <summary>
         /// サーバ側グローバル設定
         /// </summary>
-        internal class SettingServer
+        public class SettingServer
         {
             public string UdpServer { get; set; }
             public string TcpServer { get; set; }
@@ -27,7 +27,7 @@ namespace SyslogDotnet.Lib.Config
         /// <summary>
         /// サーバ側の個別ルール用
         /// </summary>
-        internal class SettingServerRule
+        public class SettingServerRule
         {
             public string Name { get; set; }
             public string Facilities { get; set; }
@@ -58,7 +58,7 @@ namespace SyslogDotnet.Lib.Config
         /// <summary>
         /// クライアント側グローバル設定
         /// </summary>
-        internal class SettingClient
+        public class SettingClient
         {
             public Dictionary<string, SettingClientRule> Rules { get; set; }
         }
@@ -66,7 +66,7 @@ namespace SyslogDotnet.Lib.Config
         /// <summary>
         /// クライアント側の個別ルール用
         /// </summary>
-        internal class SettingClientRule
+        public class SettingClientRule
         {
             public string Name { get; set; }
 
@@ -81,7 +81,14 @@ namespace SyslogDotnet.Lib.Config
             public int? Timeout { get; set; }
         }
 
+        /// <summary>
+        /// サーバ用設定
+        /// </summary>
         public SettingServer Server { get; set; }
+
+        /// <summary>
+        /// クライアント用設定
+        /// </summary>
         public SettingClient Client { get; set; }
     }
 }

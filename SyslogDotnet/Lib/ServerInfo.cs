@@ -49,9 +49,14 @@ namespace SyslogDotnet.Lib
 
         public string ResolvServerName(string text)
         {
-            if(text == "localhost") { return "127.0.0.1"; }
+            if (text == "localhost") { return "127.0.0.1"; }
 
             return text;
+        }
+
+        public override string ToString()
+        {
+            return $"{Protocol}://{Server}:{Port}";
         }
     }
 }
