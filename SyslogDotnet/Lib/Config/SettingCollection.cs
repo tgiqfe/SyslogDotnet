@@ -1,4 +1,6 @@
 ﻿using SyslogDotnet.Lib.Syslog;
+using SyslogDotnet.Lib.Syslog.Receiver;
+using SyslogDotnet.Lib.Syslog.Sender;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,13 @@ namespace SyslogDotnet.Lib.Config
     {
         public Setting Setting { get; set; }
 
+        #region Serialize/Deserialize
+
+        /// <summary>
+        /// デシリアライズ (yml文字列⇒SettingCollectionオブジェクト)
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static SettingCollection Deserialize(string path)
         {
             if (path == null) { return new SettingCollection(); }
@@ -30,6 +39,10 @@ namespace SyslogDotnet.Lib.Config
             return collection;
         }
 
+        /// <summary>
+        /// シリアライズ (SettingCollectionオブジェクト⇒yml文字列)
+        /// </summary>
+        /// <param name="path"></param>
         public void Serialize(string path)
         {
             string parent = Path.GetDirectoryName(path);
@@ -41,13 +54,24 @@ namespace SyslogDotnet.Lib.Config
             File.WriteAllText(path, yml);
         }
 
-        public Setting.SettingServerRule GetMatchServerRule(Facility facility, Severity severity)
+        #endregion
+
+        public (SyslogReceiver, SyslogReceiver) GetSyslogReceiver()
+        {
+            if (this.Setting == null || this.Setting.Server == null)
+            {
+                return (null, null);
+            }
+            return (this.Setting.Server.GetUdpServer(), this.Setting.Server.GetTcpServer());
+        }
+
+        public SettingServerRule GetMatchServerRule(Facility facility, Severity severity)
         {
             return Setting.Server.Rules.
                 FirstOrDefault(x => x.Value.IsMatch(facility, severity)).Value;
         }
 
-        public Setting.SettingClientRule GetMatchClientRule(string name)
+        public SettingClientRule GetMatchClientRule(string name)
         {
             return Setting.Client.Rules.FirstOrDefault(x => x.Value.Equals(name)).Value;
         }

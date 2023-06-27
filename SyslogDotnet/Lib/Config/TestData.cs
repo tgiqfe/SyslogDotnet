@@ -24,7 +24,7 @@ namespace SyslogDotnet.Lib.Config
                 PermittedPeer = "localhost.localdomain",
             };
             collection.Setting.Server.Rules = new();
-            Setting.SettingServerRule sRule1 = new()
+            SettingServerRule sRule1 = new()
             {
                 Name = "サーバRule01",
                 Facilities = "User",
@@ -36,7 +36,7 @@ namespace SyslogDotnet.Lib.Config
                 SyslogServer = null,
                 LogstashServer = null,
             };
-            Setting.SettingServerRule sRule2 = new()
+            SettingServerRule sRule2 = new()
             {
                 Name = "サーバRule02",
                 Facilities = "Local0, Local1, Local2",
@@ -53,7 +53,7 @@ namespace SyslogDotnet.Lib.Config
 
             collection.Setting.Client = new();
             collection.Setting.Client.Rules = new();
-            Setting.SettingClientRule cRule1 = new()
+            SettingClientRule cRule1 = new()
             {
                 Name = "ルール1",
                 Format = "3164",
@@ -65,7 +65,7 @@ namespace SyslogDotnet.Lib.Config
                 IgnoreCheck = false,
                 Timeout = 3000,
             };
-            Setting.SettingClientRule cRule2 = new()
+            SettingClientRule cRule2 = new()
             {
                 Name = "ルール2",
                 Format = "3164",
@@ -77,7 +77,7 @@ namespace SyslogDotnet.Lib.Config
                 IgnoreCheck = false,
                 Timeout = 3000,
             };
-            Setting.SettingClientRule cRule3 = new()
+            SettingClientRule cRule3 = new()
             {
                 Name = "ルール3",
                 Format = "3164",

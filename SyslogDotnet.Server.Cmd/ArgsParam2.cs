@@ -10,21 +10,18 @@ namespace SyslogDotnet.Server.Cmd
 {
     internal class ArgsParam2
     {
-        const string _defaultaddress = "0.0.0.0";
+        const string _defaultLocalAddress = "0.0.0.0";
+        const string _defaultRemoteAddress = "127.0.0.1";
         const string _defaultProtocol = "udp";
         const int _defaultPort = 514;
 
-        public string SettingPath { get; private set; }
-
-        public ArgsParam2(string[] args)
+        public static SettingCollection ToSettingCollection(string[] args)
         {
-            this.SettingPath = GetSettingPath(args);
-            var collection = GetSettingCollection(args, SettingPath);
-
-
+            var settingPath = GetSettingPath(args);
+            return GetSettingCollection(args, settingPath);
         }
 
-        private string GetSettingPath(string[] args)
+        private static string GetSettingPath(string[] args)
         {
             for (int i = 0; i < args.Length; i++)
             {
@@ -40,7 +37,7 @@ namespace SyslogDotnet.Server.Cmd
             return null;
         }
 
-        private SettingCollection GetSettingCollection(string[] args, string settingPath)
+        private static SettingCollection GetSettingCollection(string[] args, string settingPath)
         {
             SettingCollection collection = SettingCollection.Deserialize(settingPath);
             
@@ -57,7 +54,7 @@ namespace SyslogDotnet.Server.Cmd
                     case "--udp":
                         string udpServer =
                             (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
-                                args[++i] : _defaultaddress;
+                                args[++i] : _defaultLocalAddress;
                         collection.Setting.Server.UdpServer = udpServer;
                         break;
                     case "/t":
@@ -66,7 +63,7 @@ namespace SyslogDotnet.Server.Cmd
                     case "--tcp":
                         string tcpServer =
                             (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
-                            args[++i] : _defaultaddress;
+                            args[++i] : _defaultLocalAddress;
                         collection.Setting.Server.TcpServer = tcpServer;
                         break;
                     case "/l":
