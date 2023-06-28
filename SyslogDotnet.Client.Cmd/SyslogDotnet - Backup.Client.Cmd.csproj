@@ -10,4 +10,8 @@
     <ProjectReference Include="..\SyslogDotnet\SyslogDotnet.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if exist $(TargetDir)syslogdotnet.exe ( del $(TargetDir)syslogdotnet.exe )&#xD;&#xA;copy $(TargetPath) $(TargetDir)syslogdotnet.exe /y" />
+  </Target>
+
 </Project>

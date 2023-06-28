@@ -16,6 +16,9 @@ namespace SyslogDotnet.Server.Cmd
         public ServerInfo Udp { get; private set; }
         public ServerInfo Tcp { get; private set; }
 
+        public string SettingPath { get; set; }
+        public bool SaveSetting { get; set; }
+
         public bool UseSsl { get; private set; }
         public string CertFile { get; private set; }
         public string CertPassword { get; private set; }
@@ -45,6 +48,18 @@ namespace SyslogDotnet.Server.Cmd
                             (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
                             args[++i] : _defaultaddress;
                         this.Tcp = new ServerInfo(tcpServer, _defaultPort, "tcp");
+                        break;
+                    case "/g":
+                    case "-g":
+                    case "/config":
+                    case "--config":
+                        this.SettingPath = args[++i];
+                        break;
+                    case "/v":
+                    case "-v":
+                    case "/save":
+                    case "--save":
+                        this.SaveSetting = true;
                         break;
                     case "/l":
                     case "-l":

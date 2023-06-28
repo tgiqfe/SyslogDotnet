@@ -1,39 +1,43 @@
-﻿using System;
+﻿using SyslogDotnet.Lib;
+using SyslogDotnet.Lib.Config;
+using SyslogDotnet.Lib.Syslog;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SyslogDotnet.Lib;
-using SyslogDotnet.Lib.Syslog;
-using SyslogDotnet.Lib.Syslog.Sender;
+using static SyslogDotnet.Lib.Config.Setting;
 
 namespace SyslogDotnet.Client.Cmd
 {
-    internal class ArgsParam
+    internal class ArgsParam2
     {
+        const string _defaultaddress = "0.0.0.0";
         const string _defaultProtocol = "udp";
         const int _defaultPort = 514;
+        const string _tempRuleName = "temp";
 
         public ServerInfo ServerInfo { get; private set; }
-
-        public string SettingPath { get; set; }
-        public bool SaveSetting { get; set; }
-
-        public Format Format { get; private set; } = Format.RFC3164;
-        public Facility Facility { get; private set; } = Facility.UserLevelMessages;
-        public Severity Severity { get; private set; } = Severity.Informational;
+        public Format Format { get; private set; }
+        public Facility Facility { get; private set; }
+        public Severity Severity { get; private set; }
         public string AppName { get; private set; }
         public string Message { get; private set; }
-
         public bool UseSsl { get; private set; }
         public string CertFile { get; private set; }
         public string CertPassword { get; private set; }
         public bool IgnoreCheck { get; private set; }
         public int Timeout { get; private set; } = 3000;
 
-        public ArgsParam(string[] args)
+        public string SettingPath { get; set; }
+        public bool SaveSetting { get; set; }
+        public string RuleName { get; set; }
+
+        public ArgsParam2(string[] args)
         {
+            this.SettingPath = GetSettingPath(args);
+            var collection = GetSettingCollection(args, SettingPath);
+
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i].ToLower())
@@ -43,18 +47,6 @@ namespace SyslogDotnet.Client.Cmd
                     case "/server":
                     case "--server":
                         this.ServerInfo = new ServerInfo(args[++i], _defaultPort, _defaultProtocol);
-                        break;
-                    case "/g":
-                    case "-g":
-                    case "/config":
-                    case "--config":
-                        this.SettingPath = args[++i];
-                        break;
-                    case "/e":
-                    case "-e":
-                    case "/save":
-                    case "--save":
-                        this.SaveSetting = true;
                         break;
                     case "/f":
                     case "-f":
@@ -121,69 +113,33 @@ namespace SyslogDotnet.Client.Cmd
                         break;
                 }
             }
-
-            if (ServerInfo == null)
-            {
-                this.ServerInfo = new ServerInfo($"{_defaultProtocol}://localhost:{_defaultPort}");
-            }
         }
 
-        public SyslogMessage ToSyslogMessage()
-        {
-            return new SyslogMessage()
-            {
-                Format = this.Format,
-                DateTime = DateTime.Now,
-                Facility = this.Facility,
-                Severity = this.Severity,
-                HostName = Environment.MachineName,
-                AppName = this.AppName,
-                ProcId = Process.GetCurrentProcess().Id.ToString(),
-                MsgId = "-",
-                Message = this.Message,
-            };
-        }
 
-        public SyslogSender ToSyslogSender()
+        private string GetSettingPath(string[] args)
         {
-            if (ServerInfo.Protocol == "udp")
+            for (int i = 0; i < args.Length; i++)
             {
-                //  UDP
-                return new SyslogUdpSender(this.ServerInfo.Server, this.ServerInfo.Port);
-            }
-            else if (ServerInfo.Protocol == "tcp")
-            {
-                if (this.UseSsl)
+                switch (args[i].ToLower())
                 {
-                    if (string.IsNullOrEmpty(this.CertFile))
-                    {
-                        //  TCP,暗号化有り,クライアント証明書無し
-                        return new SyslogTcpSenderTLS(this.ServerInfo.Server, this.ServerInfo.Port)
-                        {
-                            IgnoreCheck = this.IgnoreCheck,
-                            Timeout = this.Timeout,
-                        };
-                    }
-                    else
-                    {
-                        //  TCP,暗号化有り,クライアント証明書有り
-                        return new SyslogTcpSenderTLS(this.ServerInfo.Server, this.ServerInfo.Port)
-                        {
-                            IgnoreCheck = this.IgnoreCheck,
-                            Timeout = this.Timeout,
-                            CertFile = this.CertFile,
-                            CertPassword = this.CertPassword,
-                        };
-                    }
-                }
-                else
-                {
-                    //  TCP,暗号化無し
-                    return new SyslogTcpSender(this.ServerInfo.Server, this.ServerInfo.Port);
+                    case "/g":
+                    case "-g":
+                    case "/config":
+                    case "--config":
+                        return args[++i];
                 }
             }
-
             return null;
+        }
+
+        private SettingCollection GetSettingCollection(string[] args, string settingPath)
+        {
+            SettingCollection collection = SettingCollection.Deserialize(settingPath);
+
+            collection.Setting ??= new();
+            collection.Setting.Client ??= new();
+            
+            return collection;
         }
     }
 }
