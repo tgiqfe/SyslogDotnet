@@ -13,23 +13,21 @@ namespace SyslogDotnet.Server.Cmd
     {
         const string _defaultLocalAddress = "0.0.0.0";
         const string _defaultRemoteAddress = "127.0.0.1";
-        //const string _defaultProtocol = "udp";
-        //const int _defaultPort = 514;
-
+        
         public const string TEMP_CLIENT_RULE = "__tempClientRule__";
 
-        enum Subcommand
+        public enum Subcommand
         {
             None,
             Server,
             Client,
         }
 
-        public static SettingCollection ToSettingCollection(string[] args)
+        public static (Subcommand, SettingCollection) ToSettingCollection(string[] args)
         {
-            var option = GetSubcommand(args);
+            var subCommand = GetSubcommand(args);
             var settingPath = GetSettingPath(args);
-            return GetSettingCollection(args, settingPath, option);
+            return (subCommand, GetSettingCollection(args, settingPath, subCommand));
         }
 
         private static Subcommand GetSubcommand(string[] args)
@@ -196,6 +194,36 @@ namespace SyslogDotnet.Server.Cmd
                         {
                             collection.Setting.Client.Rules[TEMP_CLIENT_RULE].Timeout = num;
                         }
+                        break;
+                    case "/m":
+                    case "-m":
+                    case "/message":
+                    case "--message":
+                        collection.Setting.Client.Message = args[++i];
+                        break;
+                    case "/n":
+                    case "-n":
+                    case "/appname":
+                    case "--appname":
+                        collection.Setting.Client.AppName = args[++i];
+                        break;
+                    case "/b":
+                    case "-b":
+                    case "/hostname":
+                    case "--hostname":
+                        collection.Setting.Client.HostName = args[++i];
+                        break;
+                    case "/d":
+                    case "-d":
+                    case "/procid":
+                    case "--procid":
+                        collection.Setting.Client.ProcId = args[++i];
+                        break;
+                    case "/j":
+                    case "-j":
+                    case "/msgid":
+                    case "--msgid":
+                        collection.Setting.Client.MsgId = args[++i];
                         break;
                 }
             }

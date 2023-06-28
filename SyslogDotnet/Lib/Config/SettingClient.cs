@@ -34,6 +34,7 @@ namespace SyslogDotnet.Lib.Config
         [YamlIgnore]
         public string StructuredDataParams { get; set; }
 
+
         #region Serialize parameter
 
         public Dictionary<string, SettingClientRule> Rules { get; set; }
