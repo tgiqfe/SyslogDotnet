@@ -1,5 +1,6 @@
 ﻿using SyslogDotnet.Lib;
 using SyslogDotnet.Lib.Config;
+using SyslogDotnet.Lib.Syslog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,12 @@ namespace SyslogDotnet.Server.Cmd
     {
         const string _defaultLocalAddress = "0.0.0.0";
         const string _defaultRemoteAddress = "127.0.0.1";
-        const string _defaultProtocol = "udp";
-        const int _defaultPort = 514;
+        //const string _defaultProtocol = "udp";
+        //const int _defaultPort = 514;
 
-        enum Suboption
+        public const string TEMP_CLIENT_RULE = "__tempClientRule__";
+
+        enum Subcommand
         {
             None,
             Server,
@@ -24,33 +27,23 @@ namespace SyslogDotnet.Server.Cmd
 
         public static SettingCollection ToSettingCollection(string[] args)
         {
-            var option = GetSuboption(args);
-            if (option == Suboption.Server)
-            {
-                var settingPath = GetSettingPath(args);
-                return GetSettingCollection(args, settingPath);
-
-            }
-            else if (option == Suboption.Client)
-            {
-                var settingPath = GetSettingPath(args);
-                return GetSettingCollection(args, settingPath);
-            }
-            return null;
+            var option = GetSubcommand(args);
+            var settingPath = GetSettingPath(args);
+            return GetSettingCollection(args, settingPath, option);
         }
 
-        private static Suboption GetSuboption(string[] args)
+        private static Subcommand GetSubcommand(string[] args)
         {
             if (args?.Length > 0)
             {
                 return args[0].ToLower() switch
                 {
-                    "server" => Suboption.Server,
-                    "client" => Suboption.Client,
-                    _ => Suboption.None,
+                    "server" => Subcommand.Server,
+                    "client" => Subcommand.Client,
+                    _ => Subcommand.None,
                 };
             }
-            return Suboption.None;
+            return Subcommand.None;
         }
 
         private static string GetSettingPath(string[] args)
@@ -69,12 +62,13 @@ namespace SyslogDotnet.Server.Cmd
             return null;
         }
 
-        private static SettingCollection GetSettingCollection(string[] args, string settingPath)
+        private static SettingCollection GetSettingCollection(string[] args, string settingPath, Subcommand subCommand)
         {
             SettingCollection collection = SettingCollection.Deserialize(settingPath);
 
             collection.Setting ??= new();
             collection.Setting.Server ??= new();
+            collection.Setting.Client ??= new();
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -98,23 +92,57 @@ namespace SyslogDotnet.Server.Cmd
                             args[++i] : _defaultLocalAddress;
                         collection.Setting.Server.TcpServer = tcpServer;
                         break;
+                    case "/s":
+                    case "-s":
+                    case "/server":
+                    case "--server":
+                        string targetServer =
+                            (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
+                            args[++i] :
+                            _defaultRemoteAddress;
+                        collection.Setting.Client.TargetServer = targetServer;
+                        break;
                     case "/l":
                     case "-l":
                     case "/usessl":
                     case "--usessl":
-                        collection.Setting.Server.UseSsl = true;
+                        if (subCommand == Subcommand.Server)
+                        {
+                            collection.Setting.Server.UseSsl = true;
+                        }
+                        else if (subCommand == Subcommand.Client)
+                        {
+                            initClientRule(collection, TEMP_CLIENT_RULE);
+                            collection.Setting.Client.Rules[TEMP_CLIENT_RULE].UseSsl = true;
+                        }
                         break;
                     case "/r":
                     case "-r":
                     case "/certfile":
                     case "--certfile":
-                        collection.Setting.Server.CertFile = args[++i];
+                        if (subCommand == Subcommand.Server)
+                        {
+                            collection.Setting.Server.CertFile = args[++i];
+                        }
+                        else if (subCommand == Subcommand.Client)
+                        {
+                            initClientRule(collection, TEMP_CLIENT_RULE);
+                            collection.Setting.Client.Rules[TEMP_CLIENT_RULE].CertFile = args[++i];
+                        }
                         break;
                     case "/w":
                     case "-w":
                     case "/certpassword":
                     case "--certpassword":
-                        collection.Setting.Server.CertPassword = args[++i];
+                        if (subCommand == Subcommand.Server)
+                        {
+                            collection.Setting.Server.CertPassword = args[++i];
+                        }
+                        else if (subCommand == Subcommand.Client)
+                        {
+                            initClientRule(collection, TEMP_CLIENT_RULE);
+                            collection.Setting.Client.Rules[TEMP_CLIENT_RULE].CertPassword = args[++i];
+                        }
                         break;
                     case "/q":
                     case "-q":
@@ -128,9 +156,59 @@ namespace SyslogDotnet.Server.Cmd
                     case "--permittedpeer":
                         collection.Setting.Server.PermittedPeer = args[++i];
                         break;
+
+                    case "/f":
+                    case "-f":
+                    case "/format":
+                    case "--format":
+                        initClientRule(collection, TEMP_CLIENT_RULE);
+                        collection.Setting.Client.Rules[TEMP_CLIENT_RULE].Format = args[++i];
+                        break;
+                    case "/c":
+                    case "-c":
+                    case "/facility":
+                    case "--facility":
+                    case "/facilities":
+                    case "--facilities":
+                        initClientRule(collection, TEMP_CLIENT_RULE);
+                        collection.Setting.Client.Rules[TEMP_CLIENT_RULE].Facilities = args[++i];
+                        break;
+                    case "/v":
+                    case "-v":
+                    case "/severity":
+                    case "--severity":
+                        initClientRule(collection, TEMP_CLIENT_RULE);
+                        collection.Setting.Client.Rules[TEMP_CLIENT_RULE].Severity = args[++i];
+                        break;
+
+                    case "/i":
+                    case "-i":
+                    case "/ignorecheck":
+                    case "--ignorecheck":
+                        initClientRule(collection, TEMP_CLIENT_RULE);
+                        collection.Setting.Client.Rules[TEMP_CLIENT_RULE].IgnoreCheck = true;
+                        break;
+                    case "/o":
+                    case "-o":
+                    case "/timeout":
+                    case "--timeout":
+                        if (int.TryParse(args[++i], out int num))
+                        {
+                            collection.Setting.Client.Rules[TEMP_CLIENT_RULE].Timeout = num;
+                        }
+                        break;
                 }
             }
             return collection;
+
+            void initClientRule(SettingCollection clct, string ruleName)
+            {
+                clct.Setting.Client.Rules ??= new();
+                if (!clct.Setting.Client.Rules.ContainsKey(ruleName))
+                {
+                    clct.Setting.Client.Rules[ruleName] = new();
+                }
+            }
         }
     }
 }
