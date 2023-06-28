@@ -15,6 +15,9 @@ namespace SyslogDotnet.Lib.Config
         public string TargetServer { get; set; }
 
         [YamlIgnore]
+        public string DateTime { get; set; }
+
+        [YamlIgnore]
         public string HostName { get; set; }
 
         [YamlIgnore]
@@ -35,11 +38,25 @@ namespace SyslogDotnet.Lib.Config
         public string StructuredDataParams { get; set; }
 
 
+
+
         #region Serialize parameter
 
         public Dictionary<string, SettingClientRule> Rules { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Syslogメッセージに含めるログ生成時間。
+        /// nullの場合は現在の時刻を返す。
+        /// </summary>
+        /// <returns></returns>
+        public DateTime GetDateTime()
+        {
+            return System.DateTime.TryParse(this.DateTime, out DateTime dt) ?
+                dt :
+                System.DateTime.Now;
+        }
 
         /// <summary>
         /// Syslogメッセージに含めるホスト名。

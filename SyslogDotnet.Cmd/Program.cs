@@ -1,7 +1,8 @@
 ﻿
 
-using SyslogDotnet.Server.Cmd;
+using SyslogDotnet.Cmd;
 
+/*
 (var subCommand, var collection) = ArgsParam.ToSettingCollection(args);
 if (subCommand == ArgsParam.Subcommand.Server)
 {
@@ -29,6 +30,9 @@ if (subCommand == ArgsParam.Subcommand.Server)
 }
 else if (subCommand == ArgsParam.Subcommand.Client)
 {
-
+    
 }
 
+*/
+
+Console.ReadLine();
