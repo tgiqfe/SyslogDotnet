@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SyslogDotnet.Lib.Syslog;
+using SyslogDotnet.Lib.Syslog.Sender;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,6 +13,10 @@ namespace SyslogDotnet.Lib.Config
 {
     public class SettingClient
     {
+        const int _defaultPort = 514;
+        const string _defaultProtocol = "udp";
+        const int _defaultTimeout = 3000;
+
         [YamlIgnore]
         public string TargetServer { get; set; }
 
@@ -37,6 +43,16 @@ namespace SyslogDotnet.Lib.Config
         [YamlIgnore]
         public string StructuredDataParams { get; set; }
 
+        [YamlIgnore]
+        public ServerInfo ServerInfo
+        {
+            get
+            {
+                _serverInfo ??= new ServerInfo(this.TargetServer, _defaultPort, _defaultProtocol);
+                return _serverInfo;
+            }
+        }
+        private ServerInfo _serverInfo = null;
 
         [YamlIgnore]
         public string SelectedRuleName { get; set; }
@@ -94,6 +110,69 @@ namespace SyslogDotnet.Lib.Config
             return string.IsNullOrEmpty(this.ProcId) ?
                 Process.GetCurrentProcess().Id.ToString() :
                 this.ProcId;
+        }
+
+        public SyslogMessage GetSyslogMessage(string ruleName = null)
+        {
+            if (this.SelectedRule == null) { return null; }
+
+            return new SyslogMessage()
+            {
+                Format = SelectedRule.GetFormat(),
+                DateTime = GetDateTime(),
+                Facility = SelectedRule.GetFacility(),
+                Severity = SelectedRule.GetSeverity(),
+                HostName = GetHostName(),
+                AppName = AppName,
+                ProcId = GetProcId(),
+                MsgId = MsgId,
+                Message = Message,
+            };
+        }
+
+        public SyslogSender GetSyslogSender()
+        {
+            if (this.ServerInfo.Protocol == "udp")
+            {
+                //  UDP
+                return new SyslogUdpSender(this.ServerInfo.Server, this.ServerInfo.Port);
+            }
+            else if (ServerInfo.Protocol == "tcp")
+            {
+                if (this.SelectedRule.UseSsl == true)
+                {
+                    if (string.IsNullOrEmpty(this.SelectedRule.CertFile))
+                    {
+                        //  TCP,暗号化有り,クライアント証明書無し
+                        return new SyslogTcpSenderTLS(this.ServerInfo.Server, this.ServerInfo.Port)
+                        {
+                            IgnoreCheck = this.SelectedRule.IgnoreCheck == true,
+                            Timeout = this.SelectedRule.Timeout is null ?
+                                _defaultTimeout :
+                                (int)this.SelectedRule.Timeout,
+                        };
+                    }
+                    else
+                    {
+                        //  TCP,暗号化有り,クライアント証明書有り
+                        return new SyslogTcpSenderTLS(this.ServerInfo.Server, this.ServerInfo.Port)
+                        {
+                            IgnoreCheck = this.SelectedRule.IgnoreCheck == true,
+                            Timeout = this.SelectedRule.Timeout is null ?
+                                _defaultTimeout :
+                                (int)this.SelectedRule.Timeout,
+                            CertFile = this.SelectedRule.CertFile,
+                            CertPassword = this.SelectedRule.CertPassword,
+                        };
+                    }
+                }
+                else
+                {
+                    //  TCP
+                    return new SyslogTcpSender(this.ServerInfo.Server, this.ServerInfo.Port);
+                }
+            }
+            return null;
         }
     }
 }

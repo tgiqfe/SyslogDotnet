@@ -5,9 +5,8 @@ using SyslogDotnet.Cmd;
 var collection = ArgsParam.ToSettingCollection(args);
 if (collection.Setting.Mode == SyslogDotnet.Lib.Config.SubCommand.Server)
 {
-    (var udp, var tcp) = collection.GetSyslogReceiver();
-    using (udp)
-    using (tcp)
+    using (var udp = collection.Setting.Server.GetUdpServer())
+    using (var tcp = collection.Setting.Server.GetTcpServer())
     {
         if (udp != null)
         {
@@ -29,42 +28,14 @@ if (collection.Setting.Mode == SyslogDotnet.Lib.Config.SubCommand.Server)
 }
 else if (collection.Setting.Mode == SyslogDotnet.Lib.Config.SubCommand.Client)
 {
-
-}
-
-
-
-/*
-(var subCommand, var collection) = ArgsParam.ToSettingCollection(args);
-if (subCommand == ArgsParam.Subcommand.Server)
-{
-    (var udp, var tcp) = collection.GetSyslogReceiver();
-    using (udp)
-    using (tcp)
+    var message = collection.Setting.Client.GetSyslogMessage();
+    using (var sender = collection.Setting.Client.GetSyslogSender())
     {
-        if (udp != null)
+        if(sender != null)
         {
-            udp.Init();
-            _ = udp.ReceiveAsync().ConfigureAwait(false);
-        }
-        if (tcp != null)
-        {
-            tcp.Init();
-            _ = tcp.ReceiveAsync().ConfigureAwait(false);
-        }
-
-        if (udp != null || tcp != null)
-        {
-            Console.WriteLine("Syslog待ち受け中...");
-            Console.ReadLine();
+            sender.Init();
+            sender.Send(message);
         }
     }
 }
-else if (subCommand == ArgsParam.Subcommand.Client)
-{
-    
-}
 
-*/
-
-Console.ReadLine();

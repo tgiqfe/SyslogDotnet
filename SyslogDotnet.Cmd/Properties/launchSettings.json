@@ -1,7 +1,8 @@
 {
   "profiles": {
     "SyslogDotnet.Cmd": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "client /s \"udp://localhost:514\" /m \"syslog test message.\""
     }
   }
 }

@@ -56,6 +56,7 @@ namespace SyslogDotnet.Lib.Config
 
         #endregion
 
+        /*
         public (SyslogReceiver, SyslogReceiver) GetSyslogReceiver()
         {
             if (this.Setting == null || this.Setting.Server == null)
@@ -64,6 +65,7 @@ namespace SyslogDotnet.Lib.Config
             }
             return (this.Setting.Server.GetUdpServer(), this.Setting.Server.GetTcpServer());
         }
+        */
 
         public SyslogMessage GetSyslogMessage(string ruleName)
         {
