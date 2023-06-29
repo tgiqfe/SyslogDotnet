@@ -32,13 +32,27 @@ namespace SyslogDotnet.Lib.Config
         [YamlIgnore]
         public string Message { get; set; }
 
-        
+
         //  ★データ型等未定。
         [YamlIgnore]
         public string StructuredDataParams { get; set; }
 
 
+        [YamlIgnore]
+        public string SelectedRuleName { get; set; }
 
+        [YamlIgnore]
+        public SettingClientRule SelectedRule
+        {
+            get
+            {
+                _selectedRule ??= !string.IsNullOrEmpty(this.SelectedRuleName) && this.Rules.ContainsKey(this.SelectedRuleName) ?
+                    Rules[this.SelectedRuleName] :
+                    null;
+                return _selectedRule;
+            }
+        }
+        private SettingClientRule _selectedRule = null;
 
         #region Serialize parameter
 

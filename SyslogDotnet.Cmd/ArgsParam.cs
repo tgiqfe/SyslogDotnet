@@ -14,50 +14,27 @@ namespace SyslogDotnet.Cmd
         const string _defaultLocalAddress = "0.0.0.0";
         const string _defaultRemoteAddress = "127.0.0.1";
 
-        public const string TEMP_SELECTED_RULENAME = "__tempClientRuleName__";
+        public const string TEMP_SELECTED_RULENAME = "__tempSelectedRuleName__";
 
         public static SettingCollection ToSettingCollection(string[] args)
         {
-            var mode = GetSubcommand(args);
-            (var settingPath, var selectedRuleName) = GetPreSetting(args);
+            var collection = CreateSettingCollection(args);
+            SetupSettingCollection(args, collection);
 
-            var collection = SettingCollection.Deserialize(settingPath);
-            collection.Setting ??= new();
-            collection.Setting.Mode = mode;
-            collection.Setting.SelectedRuleName = selectedRuleName;
-            if (mode == SubCommand.Server)
-            {
-                collection.Setting.Server ??= new();
-            }
-            else if (mode == SubCommand.Client)
-            {
-                collection.Setting.Client ??= new();
-                collection.Setting.Client.Rules ??= new();
-                if (!collection.Setting.Client.Rules.ContainsKey(selectedRuleName))
-                {
-                    collection.Setting.Client.Rules[selectedRuleName] = new();
-                }
-            }
-
-            return SetupSettingCollection(args, collection);
+            return collection;
         }
 
-        private static SubCommand GetSubcommand(string[] args)
+        private static SettingCollection CreateSettingCollection(string[] args)
         {
-            if (args?.Length > 0)
-            {
-                return args[0].ToLower() switch
-                {
-                    "server" => SubCommand.Server,
-                    "client" => SubCommand.Client,
-                    _ => SubCommand.None,
-                };
-            }
-            return SubCommand.None;
-        }
+            if (args == null || args.Length == 0) { return null; }
 
-        private static (string, string) GetPreSetting(string[] args)
-        {
+            var mode = args[0].ToLower() switch
+            {
+                "server" => SubCommand.Server,
+                "client" => SubCommand.Client,
+                _ => SubCommand.None,
+            };
+
             string settingPath = null;
             string selectedRuleName = TEMP_SELECTED_RULENAME;
             for (int i = 0; i < args.Length; i++)
@@ -78,12 +55,31 @@ namespace SyslogDotnet.Cmd
                         break;
                 }
             }
-            return (settingPath, selectedRuleName);
+
+            var collection = SettingCollection.Deserialize(settingPath);
+            collection.Setting ??= new();
+            collection.Setting.Mode = mode;
+            if (mode == SubCommand.Server)
+            {
+                collection.Setting.Server ??= new();
+            }
+            else if (mode == SubCommand.Client)
+            {
+                collection.Setting.Client ??= new();
+                collection.Setting.Client.SelectedRuleName = selectedRuleName;
+                collection.Setting.Client.Rules ??= new();
+                if (!collection.Setting.Client.Rules.ContainsKey(selectedRuleName))
+                {
+                    collection.Setting.Client.Rules[selectedRuleName] = new();
+                }
+            }
+
+            return collection;
         }
 
-        private static SettingCollection SetupSettingCollection(string[] args, SettingCollection collection)
+        private static void SetupSettingCollection(string[] args, SettingCollection collection)
         {
-            for(int i = 0; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i].ToLower())
                 {
@@ -125,106 +121,33 @@ namespace SyslogDotnet.Cmd
                         }
                         else if (collection.Setting.Mode == SubCommand.Client)
                         {
-                            collection.Setting.Client.Rules[collection.Setting.SelectedRuleName].UseSsl = true;
-                        }
-                        break;
-
-
-
-
-
-
-
-
-
-                }
-            }
-
-            return null;
-        }
-
-
-
-        private static SettingCollection GetSettingCollection(string[] args, string settingPath, SubCommand mode, string clientRuleName)
-        {
-            SettingCollection collection = SettingCollection.Deserialize(settingPath);
-
-            collection.Setting ??= new();
-            collection.Setting.Server ??= new();
-            collection.Setting.Client ??= new();
-
-            for (int i = 0; i < args.Length; i++)
-            {
-                switch (args[i].ToLower())
-                {
-                    case "/u":
-                    case "-u":
-                    case "/udp":
-                    case "--udp":
-                        string udpServer =
-                            (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
-                                args[++i] : _defaultLocalAddress;
-                        collection.Setting.Server.UdpServer = udpServer;
-                        break;
-                    case "/t":
-                    case "-t":
-                    case "/tcp":
-                    case "--tcp":
-                        string tcpServer =
-                            (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
-                            args[++i] : _defaultLocalAddress;
-                        collection.Setting.Server.TcpServer = tcpServer;
-                        break;
-                    case "/s":
-                    case "-s":
-                    case "/server":
-                    case "--server":
-                        string targetServer =
-                            (i + 1) < args.Length && (!args[i + 1].StartsWith("/") && !args[i + 1].StartsWith("-")) ?
-                            args[++i] :
-                            _defaultRemoteAddress;
-                        collection.Setting.Client.TargetServer = targetServer;
-                        break;
-                    case "/l":
-                    case "-l":
-                    case "/usessl":
-                    case "--usessl":
-                        if (mode == SubCommand.Server)
-                        {
-                            collection.Setting.Server.UseSsl = true;
-                        }
-                        else if (mode == SubCommand.Client)
-                        {
-                            initClientRule(collection, clientRuleName);
-                            collection.Setting.Client.Rules[clientRuleName].UseSsl = true;
+                            collection.Setting.Client.SelectedRule.UseSsl = true;
                         }
                         break;
                     case "/r":
                     case "-r":
                     case "/certfile":
                     case "--certfile":
-                        if (mode == SubCommand.Server)
+                        if (collection.Setting.Mode == SubCommand.Server)
                         {
                             collection.Setting.Server.CertFile = args[++i];
                         }
-                        else if (mode == SubCommand.Client)
+                        else if (collection.Setting.Mode == SubCommand.Client)
                         {
-                            initClientRule(collection, clientRuleName);
-                            collection.Setting.Client.Rules[clientRuleName].CertFile = args[++i];
+                            collection.Setting.Client.SelectedRule.CertFile = args[++i];
                         }
                         break;
                     case "/w":
                     case "-w":
                     case "/certpassword":
                     case "--certpassword":
-                        if (mode == SubCommand.Server)
+                        if (collection.Setting.Mode == SubCommand.Server)
                         {
                             collection.Setting.Server.CertPassword = args[++i];
                         }
-                        else if (mode == SubCommand.Client)
+                        else if (collection.Setting.Mode == SubCommand.Client)
                         {
-                            initClientRule(collection, clientRuleName);
-                            collection.Setting.Client.Rules[clientRuleName].CertPassword = args[++i];
+                            collection.Setting.Client.SelectedRule.CertPassword = args[++i];
                         }
                         break;
                     case "/q":
@@ -239,35 +162,29 @@ namespace SyslogDotnet.Cmd
                     case "--permittedpeer":
                         collection.Setting.Server.PermittedPeer = args[++i];
                         break;
-
                     case "/f":
                     case "-f":
                     case "/format":
                     case "--format":
-                        initClientRule(collection, clientRuleName);
-                        collection.Setting.Client.Rules[clientRuleName].Format = args[++i];
+                        collection.Setting.Client.SelectedRule.Format = args[++i];
                         break;
                     case "/c":
                     case "-c":
                     case "/facility":
                     case "--facility":
-                        initClientRule(collection, clientRuleName);
-                        collection.Setting.Client.Rules[clientRuleName].Facility = args[++i];
+                        collection.Setting.Client.SelectedRule.Facility = args[++i];
                         break;
                     case "/v":
                     case "-v":
                     case "/severity":
                     case "--severity":
-                        initClientRule(collection, clientRuleName);
-                        collection.Setting.Client.Rules[clientRuleName].Severity = args[++i];
+                        collection.Setting.Client.SelectedRule.Severity = args[++i];
                         break;
-
                     case "/i":
                     case "-i":
                     case "/ignorecheck":
                     case "--ignorecheck":
-                        initClientRule(collection, clientRuleName);
-                        collection.Setting.Client.Rules[clientRuleName].IgnoreCheck = true;
+                        collection.Setting.Client.SelectedRule.IgnoreCheck = true;
                         break;
                     case "/o":
                     case "-o":
@@ -275,7 +192,7 @@ namespace SyslogDotnet.Cmd
                     case "--timeout":
                         if (int.TryParse(args[++i], out int num))
                         {
-                            collection.Setting.Client.Rules[clientRuleName].Timeout = num;
+                            collection.Setting.Client.SelectedRule.Timeout = num;
                         }
                         break;
                     case "/m":
@@ -308,16 +225,6 @@ namespace SyslogDotnet.Cmd
                     case "--msgid":
                         collection.Setting.Client.MsgId = args[++i];
                         break;
-                }
-            }
-            return collection;
-
-            void initClientRule(SettingCollection clct, string ruleName)
-            {
-                clct.Setting.Client.Rules ??= new();
-                if (!clct.Setting.Client.Rules.ContainsKey(ruleName))
-                {
-                    clct.Setting.Client.Rules[ruleName] = new();
                 }
             }
         }

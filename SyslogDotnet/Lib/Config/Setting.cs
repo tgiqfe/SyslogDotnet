@@ -13,9 +13,6 @@ namespace SyslogDotnet.Lib.Config
         [YamlIgnore]
         public SubCommand Mode { get; set; }
 
-        [YamlIgnore]
-        public string SelectedRuleName { get; set; }
-
         /// <summary>
         /// サーバ用設定
         /// </summary>
