@@ -38,8 +38,6 @@ namespace SyslogDotnet.Lib.Config
         [YamlIgnore]
         public string Message { get; set; }
 
-
-        //  ★データ型等未定。
         [YamlIgnore]
         public string StructuredDataParams { get; set; }
 
@@ -126,6 +124,7 @@ namespace SyslogDotnet.Lib.Config
                 AppName = AppName,
                 ProcId = GetProcId(),
                 MsgId = MsgId,
+                StructuredDataParams = StructuredData.Deserialize(StructuredDataParams),
                 Message = Message,
             };
         }

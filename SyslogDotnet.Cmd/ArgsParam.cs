@@ -202,7 +202,7 @@ namespace SyslogDotnet.Cmd
                         collection.Setting.Client.Message = args[++i];
                         break;
                     case "/a":
-                    case "-n":
+                    case "-a":
                     case "/appname":
                     case "--appname":
                         collection.Setting.Client.AppName = args[++i];
@@ -230,9 +230,7 @@ namespace SyslogDotnet.Cmd
                     case "/stractureddata":
                     case "--stractureddata":
                         //  StracturedDataを指定する場合は、最後の引数として使用。
-                        string.Join(" ", args.Skip(i + 1));
-
-
+                        collection.Setting.Client.StructuredDataParams = string.Join(" ", args.Skip(i + 1));
                         break;
                 }
             }

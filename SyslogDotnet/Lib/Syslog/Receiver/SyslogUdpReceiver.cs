@@ -32,8 +32,12 @@ namespace SyslogDotnet.Lib.Syslog.Receiver
                     var ret = await _client.ReceiveAsync();
                     var address = ret.RemoteEndPoint.Address;
                     var port = ret.RemoteEndPoint.Port;
-                    
+
                     var sysMsg = SyslogMessage.Deserialize(ret.Buffer);
+
+                    //  デバッグ用
+                    Console.WriteLine(Encoding.UTF8.GetString(ret.Buffer));
+
                     sysMsg.RemoteIPAddress = address.ToString();
                     sysMsg.RemotePort = port;
                     sysMsg.TransferType = "UDP";

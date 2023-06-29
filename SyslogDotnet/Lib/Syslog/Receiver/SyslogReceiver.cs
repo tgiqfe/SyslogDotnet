@@ -31,7 +31,7 @@ namespace SyslogDotnet.Lib.Syslog.Receiver
         {
             //Console.WriteLine(message);
             ActionStandard.Output(message);
-            //ActionJsonLog.Output(message, "jsonlog.txt");
+            ActionJsonLog.Output(message, "jsonlog.txt");
             //ActionFileLog.Output(message, "filelog.txt");
         }
 

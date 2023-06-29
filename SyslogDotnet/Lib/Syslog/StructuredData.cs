@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace SyslogDotnet.Lib.Syslog
 {
@@ -11,12 +7,16 @@ namespace SyslogDotnet.Lib.Syslog
     /// </summary>
     public class StructuredData
     {
-        public const int DefaultPrivateEnterpriseNumber = 32473;
+        const int DefaultPrivateEnterpriseNumber = 32473;
 
-        public string SdId = null;
+        #region Serialize parameter
 
-        public Dictionary<string, string> SdParam = null;
-        
+        public string SdId { get; set; }
+
+        public Dictionary<string, string> SdParam { get; set; }
+
+        #endregion
+
         public StructuredData() { }
 
         public StructuredData(string sdId, Dictionary<string, string> sdParam)
@@ -42,6 +42,31 @@ namespace SyslogDotnet.Lib.Syslog
                 });
 
             return $"[{sdid} {string.Join(" ", items)}]";
+        }
+
+        public static StructuredData[] Deserialize(string text)
+        {
+            var patternA = new Regex(@"\]\s*\[");
+            var patternB = new Regex(@"\s+(?=(?:[^""]*""[^""]*"")*[^""]*$)");
+
+            text = text.Substring(text.IndexOf("[") + 1);
+            text = text.Substring(0, text.LastIndexOf("]"));
+            var list = new List<StructuredData>();
+            foreach (var sdText in patternA.Split(text))
+            {
+                var fields = patternB.Split(sdText);
+                if (fields.Length > 0)
+                {
+                    var sd = new StructuredData(
+                        fields[0],
+                        fields.Skip(1).
+                            Where(x => x.Contains("=")).
+                        ToDictionary(x => x.Substring(0, x.IndexOf("=")), x => x.Substring(x.IndexOf("=") + 1).Trim('\"')));
+                    list.Add(sd);
+                }
+            }
+
+            return list.ToArray();
         }
     }
 }

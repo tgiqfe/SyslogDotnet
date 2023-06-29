@@ -3,7 +3,6 @@
 using SyslogDotnet.Cmd;
 
 
-/*
 var collection = ArgsParam.ToSettingCollection(args);
 if (collection.Setting.SubCommand == SyslogDotnet.Lib.Config.SubCommand.Server)
 {
@@ -40,8 +39,4 @@ else if (collection.Setting.SubCommand == SyslogDotnet.Lib.Config.SubCommand.Cli
         }
     }
 }
-*/
 
-
-
-Console.WriteLine(string.Join("-", args.Skip(1)));
