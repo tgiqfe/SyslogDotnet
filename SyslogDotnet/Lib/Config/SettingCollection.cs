@@ -56,36 +56,6 @@ namespace SyslogDotnet.Lib.Config
 
         #endregion
 
-        /*
-        public (SyslogReceiver, SyslogReceiver) GetSyslogReceiver()
-        {
-            if (this.Setting == null || this.Setting.Server == null)
-            {
-                return (null, null);
-            }
-            return (this.Setting.Server.GetUdpServer(), this.Setting.Server.GetTcpServer());
-        }
-        */
-
-        public SyslogMessage GetSyslogMessage(string ruleName)
-        {
-            var rule = this.Setting.Client.Rules[ruleName];
-            return new SyslogMessage()
-            {
-                Format = rule.GetFormat(),
-                DateTime = this.Setting.Client.GetDateTime(),
-                Facility = rule.GetFacility(),
-                Severity = rule.GetSeverity(),
-                HostName = this.Setting.Client.GetHostName(),
-                AppName = this.Setting.Client.AppName,
-                ProcId = this.Setting.Client.GetProcId(),
-                MsgId = this.Setting.Client.MsgId,
-                Message = this.Setting.Client.Message,
-            };
-        }
-
-
-
 
         public SettingServerRule GetMatchServerRule(Facility facility, Severity severity)
         {

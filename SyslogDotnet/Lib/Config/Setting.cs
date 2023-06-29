@@ -11,7 +11,7 @@ namespace SyslogDotnet.Lib.Config
     public class Setting
     {
         [YamlIgnore]
-        public SubCommand Mode { get; set; }
+        public SubCommand SubCommand { get; set; }
 
         /// <summary>
         /// サーバ用設定

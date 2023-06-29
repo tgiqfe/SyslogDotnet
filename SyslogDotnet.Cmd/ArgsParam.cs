@@ -28,7 +28,7 @@ namespace SyslogDotnet.Cmd
         {
             if (args == null || args.Length == 0) { return null; }
 
-            var mode = args[0].ToLower() switch
+            var subCommand = args[0].ToLower() switch
             {
                 "server" => SubCommand.Server,
                 "client" => SubCommand.Client,
@@ -58,12 +58,12 @@ namespace SyslogDotnet.Cmd
 
             var collection = SettingCollection.Deserialize(settingPath);
             collection.Setting ??= new();
-            collection.Setting.Mode = mode;
-            if (mode == SubCommand.Server)
+            collection.Setting.SubCommand = subCommand;
+            if (subCommand == SubCommand.Server)
             {
                 collection.Setting.Server ??= new();
             }
-            else if (mode == SubCommand.Client)
+            else if (subCommand == SubCommand.Client)
             {
                 collection.Setting.Client ??= new();
                 collection.Setting.Client.SelectedRuleName = selectedRuleName;
@@ -115,11 +115,11 @@ namespace SyslogDotnet.Cmd
                     case "-l":
                     case "/usessl":
                     case "--usessl":
-                        if (collection.Setting.Mode == SubCommand.Server)
+                        if (collection.Setting.SubCommand == SubCommand.Server)
                         {
                             collection.Setting.Server.UseSsl = true;
                         }
-                        else if (collection.Setting.Mode == SubCommand.Client)
+                        else if (collection.Setting.SubCommand == SubCommand.Client)
                         {
                             collection.Setting.Client.SelectedRule.UseSsl = true;
                         }
@@ -128,11 +128,11 @@ namespace SyslogDotnet.Cmd
                     case "-r":
                     case "/certfile":
                     case "--certfile":
-                        if (collection.Setting.Mode == SubCommand.Server)
+                        if (collection.Setting.SubCommand == SubCommand.Server)
                         {
                             collection.Setting.Server.CertFile = args[++i];
                         }
-                        else if (collection.Setting.Mode == SubCommand.Client)
+                        else if (collection.Setting.SubCommand == SubCommand.Client)
                         {
                             collection.Setting.Client.SelectedRule.CertFile = args[++i];
                         }
@@ -141,11 +141,11 @@ namespace SyslogDotnet.Cmd
                     case "-w":
                     case "/certpassword":
                     case "--certpassword":
-                        if (collection.Setting.Mode == SubCommand.Server)
+                        if (collection.Setting.SubCommand == SubCommand.Server)
                         {
                             collection.Setting.Server.CertPassword = args[++i];
                         }
-                        else if (collection.Setting.Mode == SubCommand.Client)
+                        else if (collection.Setting.SubCommand == SubCommand.Client)
                         {
                             collection.Setting.Client.SelectedRule.CertPassword = args[++i];
                         }
@@ -224,6 +224,15 @@ namespace SyslogDotnet.Cmd
                     case "/msgid":
                     case "--msgid":
                         collection.Setting.Client.MsgId = args[++i];
+                        break;
+                    case "/x":
+                    case "-x":
+                    case "/stractureddata":
+                    case "--stractureddata":
+                        //  StracturedDataを指定する場合は、最後の引数として使用。
+                        string.Join(" ", args.Skip(i + 1));
+
+
                         break;
                 }
             }
