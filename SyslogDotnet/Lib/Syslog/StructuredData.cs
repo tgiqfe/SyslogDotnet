@@ -46,6 +46,8 @@ namespace SyslogDotnet.Lib.Syslog
 
         public static StructuredData[] Deserialize(string text)
         {
+            if (string.IsNullOrEmpty(text)) { return null; }
+
             var patternA = new Regex(@"\]\s*\[");
             var patternB = new Regex(@"\s+(?=(?:[^""]*""[^""]*"")*[^""]*$)");
 

@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "SyslogDotnet": {
-      "commandName": "Executable",
-      "executablePath": "pwsh.exe",
-      "commandLineArgs": "-ExecutionPolicy Unrestricted -NoExit -Command \"Import-Module .\\SyslogDotnet.Server.Pwsh.dll\""
-    }
-  }
-}

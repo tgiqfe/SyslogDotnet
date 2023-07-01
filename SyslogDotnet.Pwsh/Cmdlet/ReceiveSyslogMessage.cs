@@ -45,28 +45,13 @@ namespace SyslogDotnet.Pwsh.Cmdlet
             collection.Setting.SubCommand = SubCommand.Server;
             collection.Setting.Server ??= new();
 
-            if (!string.IsNullOrEmpty(this.Udp))
-            {
-                collection.Setting.Server.UdpServer = this.Udp;
-            }
-            if (!string.IsNullOrEmpty(this.Tcp))
-            {
-                collection.Setting.Server.TcpServer = this.Tcp;
-            }
+            collection.Setting.Server.UdpServer = this.Udp;
+            collection.Setting.Server.TcpServer = this.Tcp;
             collection.Setting.Server.UseSsl = this.UseSsl;
-            if (!string.IsNullOrEmpty(this.CertFile))
-            {
-                collection.Setting.Server.CertFile = this.CertFile;
-            }
-            if (!string.IsNullOrEmpty(this.CertPassword))
-            {
-                collection.Setting.Server.CertPassword = this.CertPassword;
-            }
+            collection.Setting.Server.CertFile = this.CertFile;
+            collection.Setting.Server.CertPassword = this.CertPassword;
             collection.Setting.Server.ClientCertificateRequired = this.ClientCertificateRequired;
-            if (!string.IsNullOrEmpty(this.PermittedPeer))
-            {
-                collection.Setting.Server.PermittedPeer = this.PermittedPeer;
-            }
+            collection.Setting.Server.PermittedPeer = this.PermittedPeer;
 
             #endregion
 

@@ -110,6 +110,19 @@ namespace SyslogDotnet.Lib.Config
                 this.ProcId;
         }
 
+        private StructuredData[] _sd = null;
+
+        public StructuredData[] GetStructuredDataParams()
+        {
+            _sd ??= StructuredData.Deserialize(this.StructuredDataParams);
+            return _sd;
+        }
+
+        public void SetStructuredDataParams(StructuredData[] sd)
+        {
+            _sd = sd;
+        }
+
         public SyslogMessage GetSyslogMessage(string ruleName = null)
         {
             if (this.SelectedRule == null) { return null; }
