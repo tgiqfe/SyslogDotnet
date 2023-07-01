@@ -23,7 +23,7 @@ namespace SyslogDotnet.Lib.Config
         /// <returns></returns>
         public static SettingCollection Deserialize(string path)
         {
-            if (path == null) { return new SettingCollection(); }
+            if (string.IsNullOrEmpty(path)) { return new SettingCollection(); }
 
             SettingCollection collection = null;
             try
