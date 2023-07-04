@@ -1,4 +1,5 @@
 ﻿using SyslogDotnet.Lib;
+using SyslogDotnet.Lib.Config;
 using SyslogDotnet.Lib.Syslog.Receiver;
 using System.Management.Automation;
 
@@ -30,57 +31,50 @@ namespace SyslogDotnet.Pwsh.Cmdlet
         [Parameter]
         public string PermittedPeer { get; set; }
 
+        [Parameter]
+        public string SettingPath { get; set; }
+
         #endregion
 
         protected override void ProcessRecord()
         {
-            //  UDP待ち受け
-            if (!string.IsNullOrEmpty(this.Udp))
-            {
-                var sv = new ServerInfo(this.Udp);
-                var udp = new SyslogUdpReceiver(sv.Server, sv.Port);
-                udp.Init();
-                _ = udp.ReceiveAsync().ConfigureAwait(false);
-            }
+            #region set SettingCollection
 
-            //  TCP待ち受け
-            if (!string.IsNullOrEmpty(this.Tcp))
+            var collection = SettingCollection.Deserialize(this.SettingPath);
+            collection.Setting ??= new();
+            collection.Setting.SubCommand = SubCommand.Server;
+            collection.Setting.Server ??= new();
+
+            collection.Setting.Server.UdpServer = this.Udp;
+            collection.Setting.Server.TcpServer = this.Tcp;
+            collection.Setting.Server.UseSsl = this.UseSsl;
+            collection.Setting.Server.CertFile = this.CertFile;
+            collection.Setting.Server.CertPassword = this.CertPassword;
+            collection.Setting.Server.ClientCertificateRequired = this.ClientCertificateRequired;
+            collection.Setting.Server.PermittedPeer = this.PermittedPeer;
+
+            #endregion
+
+            using (var udp = collection.Setting.Server.GetUdpServer())
+            using (var tcp = collection.Setting.Server.GetTcpServer())
             {
-                var sv = new ServerInfo(this.Tcp);
-                if (this.UseSsl)
+                if (udp != null)
                 {
-                    if (this.ClientCertificateRequired)
-                    {
-                        var tcp = new SyslogTcpReceiverTLS(sv.Server, sv.Port)
-                        {
-                            CertFile = this.CertFile,
-                            CertPassword = this.CertPassword,
-                            ClientCertificateRequired = this.ClientCertificateRequired,
-                            PermittedPeer = this.PermittedPeer,
-                        };
-                        tcp.Init();
-                        _ = tcp.ReceiveAsync().ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        var tcp = new SyslogTcpReceiverTLS(sv.Server, sv.Port)
-                        {
-                            CertFile = this.CertFile,
-                            CertPassword = this.CertPassword,
-                        };
-                        tcp.Init();
-                        _ = tcp.ReceiveAsync().ConfigureAwait(false);
-                    }
+                    udp.Init();
+                    _ = udp.ReceiveAsync().ConfigureAwait(false);
                 }
-                else
+                if (tcp != null)
                 {
-                    var tcp = new SyslogTcpReceiver(sv.Server, sv.Port);
                     tcp.Init();
                     _ = tcp.ReceiveAsync().ConfigureAwait(false);
                 }
-            }
 
-            Console.ReadLine();
+                if (udp != null || tcp != null)
+                {
+                    Console.WriteLine("Syslog待ち受け中...");
+                    Console.ReadLine();
+                }
+            }
         }
     }
 }

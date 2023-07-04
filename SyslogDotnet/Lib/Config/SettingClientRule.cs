@@ -19,19 +19,45 @@ namespace SyslogDotnet.Lib.Config
         public bool? IgnoreCheck { get; set; }
         public int? Timeout { get; set; }
 
+        private Format? _format = null;
+        private Facility? _facility = null;
+        private Severity? _severity = null;
+
         public Format GetFormat()
         {
-            return FormatMapper.ToFormat(this.Format);
+            _format ??= FormatMapper.ToFormat(this.Format);
+            return (Format)_format;
+
+            //return FormatMapper.ToFormat(this.Format);
         }
 
         public Facility GetFacility()
         {
-            return FacilityMapper.ToFacility(this.Facility);
+            _facility ??= FacilityMapper.ToFacility(this.Facility);
+            return (Facility)_facility;
+            //return FacilityMapper.ToFacility(this.Facility);
         }
 
         public Severity GetSeverity()
         {
-            return SeverityMapper.ToSeverity(this.Severity);
+            _severity = SeverityMapper.ToSeverity(this.Severity);
+            return (Severity)_severity;
+            //return SeverityMapper.ToSeverity(this.Severity);
+        }
+
+        public void SetFormat(Format? format)
+        {
+            _format = format;
+        }
+
+        public void SetFacility(Facility? facility)
+        {
+            _facility = facility;
+        }
+
+        public void SetSeverity(Severity? severity)
+        {
+            _severity = severity;
         }
     }
 }

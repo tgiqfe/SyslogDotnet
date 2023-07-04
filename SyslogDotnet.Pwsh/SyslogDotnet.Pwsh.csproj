@@ -13,4 +13,8 @@
     <ProjectReference Include="..\SyslogDotnet\SyslogDotnet.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(SolutionDir)SyslogDotnet.Cmd\bin\$(Configuration)\net6.0\YamlDotNet.dll $(TargetDir)YamlDotNet.dll /y" />
+  </Target>
+
 </Project>
