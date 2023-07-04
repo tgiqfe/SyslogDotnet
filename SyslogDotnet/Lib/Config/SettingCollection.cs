@@ -23,7 +23,7 @@ namespace SyslogDotnet.Lib.Config
         /// <returns></returns>
         public static SettingCollection Deserialize(string path)
         {
-            if (path == null) { return new SettingCollection(); }
+            if (string.IsNullOrEmpty(path)) { return new SettingCollection(); }
 
             SettingCollection collection = null;
             try
@@ -56,14 +56,6 @@ namespace SyslogDotnet.Lib.Config
 
         #endregion
 
-        public (SyslogReceiver, SyslogReceiver) GetSyslogReceiver()
-        {
-            if (this.Setting == null || this.Setting.Server == null)
-            {
-                return (null, null);
-            }
-            return (this.Setting.Server.GetUdpServer(), this.Setting.Server.GetTcpServer());
-        }
 
         public SettingServerRule GetMatchServerRule(Facility facility, Severity severity)
         {

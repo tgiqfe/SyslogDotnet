@@ -1,13 +1,15 @@
-﻿
+﻿using SyslogDotnet.Cmd;
+using SyslogDotnet.Cmd.Help;
 
-using SyslogDotnet.Server.Cmd;
-
-(var subCommand, var collection) = ArgsParam.ToSettingCollection(args);
-if (subCommand == ArgsParam.Subcommand.Server)
+var collection = ArgsParam.ToSettingCollection(args);
+if(collection == null)
 {
-    (var udp, var tcp) = collection.GetSyslogReceiver();
-    using (udp)
-    using (tcp)
+    HelpContent.Print();
+}
+else if (collection.Setting.SubCommand == SyslogDotnet.Lib.Config.SubCommand.Server)
+{
+    using (var udp = collection.Setting.Server.GetUdpServer())
+    using (var tcp = collection.Setting.Server.GetTcpServer())
     {
         if (udp != null)
         {
@@ -27,8 +29,16 @@ if (subCommand == ArgsParam.Subcommand.Server)
         }
     }
 }
-else if (subCommand == ArgsParam.Subcommand.Client)
+else if (collection.Setting.SubCommand == SyslogDotnet.Lib.Config.SubCommand.Client)
 {
-
+    var message = collection.Setting.Client.GetSyslogMessage();
+    using (var sender = collection.Setting.Client.GetSyslogSender())
+    {
+        if (sender != null)
+        {
+            sender.Init();
+            sender.Send(message);
+        }
+    }
 }
 

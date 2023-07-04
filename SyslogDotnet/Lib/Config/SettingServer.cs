@@ -24,6 +24,9 @@ namespace SyslogDotnet.Lib.Config
 
         #endregion
 
+        [YamlIgnore]
+        public string SelectedRuleName { get; set; }
+
         const string _defaultRemoteAddress = "0.0.0.0";
         const string _defaultProtocol = "udp";
         const int _defaultPort = 514;

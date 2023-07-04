@@ -57,7 +57,7 @@ namespace SyslogDotnet.Lib.Config
             {
                 Name = "ルール1",
                 Format = "3164",
-                Facilities = "Local0, Local1, Local2",
+                Facility = "Local0, Local1, Local2",
                 Severity = "Info",
                 UseSsl = true,
                 CertFile = "clcert.pfx",
@@ -69,7 +69,7 @@ namespace SyslogDotnet.Lib.Config
             {
                 Name = "ルール2",
                 Format = "3164",
-                Facilities = "Local0, Local1, Local2",
+                Facility = "Local0, Local1, Local2",
                 Severity = "Warn",
                 UseSsl = true,
                 CertFile = "clcert.pfx",
@@ -81,7 +81,7 @@ namespace SyslogDotnet.Lib.Config
             {
                 Name = "ルール3",
                 Format = "3164",
-                Facilities = "Local0, Local1, Local2",
+                Facility = "Local0, Local1, Local2",
                 Severity = "Error",
                 UseSsl = true,
                 CertFile = "clcert.pfx",

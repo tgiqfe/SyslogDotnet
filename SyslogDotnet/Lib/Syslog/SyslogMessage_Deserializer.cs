@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SyslogDotnet.Lib.Syslog
@@ -18,6 +19,8 @@ namespace SyslogDotnet.Lib.Syslog
 
             var list = text.Split(' ').ToList();
             SyslogMessage message = new();
+
+            //  ★後日もう少しブラッシュアップしておきたい。
 
             if (list?.Count > 0)
             {
@@ -45,8 +48,19 @@ namespace SyslogDotnet.Lib.Syslog
                                 message.AppName = list[3];
                                 message.ProcId = list[4];
                                 message.MsgId = list[5];
-                                //message.StructuredDataParams = null;  (list[6])
-                                message.Message = string.Join(" ", list.Skip(7));
+
+                                //  StructuredDataと、それ以降のMessageをセット
+                                if (text.Contains("[") && text.Contains("]"))
+                                {
+                                    var matches = Regex.Matches(text, @"\[[^\]]+@[^\]]+([^\]]+=[^\]]+)*\]");
+                                    message.StructuredDataParams = StructuredData.Deserialize(string.Join("", matches.Select(x => x.Value)));
+                                    message.Message = text.Substring(matches.Last().Index + matches.Last().Length + 1);
+                                }
+                                else
+                                {
+                                    message.StructuredDataParams = null;    //  list[6]
+                                    message.Message = string.Join(" ", list.Skip(7));
+                                }
                             }
                             else if (DateTime.TryParse($"{DateTime.Now.Year} {list[0]} {list[1]} {list[2]}", out DateTime dt3164))
                             {

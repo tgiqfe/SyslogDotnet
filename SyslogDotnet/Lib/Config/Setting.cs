@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YamlDotNet.Serialization;
 
 namespace SyslogDotnet.Lib.Config
 {
     public class Setting
     {
+        [YamlIgnore]
+        public SubCommand SubCommand { get; set; }
+
         /// <summary>
         /// サーバ用設定
         /// </summary>
