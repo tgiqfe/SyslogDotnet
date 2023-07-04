@@ -19,6 +19,8 @@ namespace SyslogDotnet.Cmd
         public static SettingCollection ToSettingCollection(string[] args)
         {
             var collection = CreateSettingCollection(args);
+            if (collection == null) { return null; }
+
             SetupSettingCollection(args, collection);
 
             return collection;
@@ -34,6 +36,7 @@ namespace SyslogDotnet.Cmd
                 "client" => SubCommand.Client,
                 _ => SubCommand.None,
             };
+            if (subCommand == SubCommand.None) { return null; }
 
             string settingPath = null;
             string selectedRuleName = TEMP_SELECTED_RULENAME;
@@ -162,6 +165,21 @@ namespace SyslogDotnet.Cmd
                     case "--permittedpeer":
                         collection.Setting.Server.PermittedPeer = args[++i];
                         break;
+                    case "/i":
+                    case "-i":
+                    case "/ignorecheck":
+                    case "--ignorecheck":
+                        collection.Setting.Client.SelectedRule.IgnoreCheck = true;
+                        break;
+                    case "/o":
+                    case "-o":
+                    case "/timeout":
+                    case "--timeout":
+                        if (int.TryParse(args[++i], out int num))
+                        {
+                            collection.Setting.Client.SelectedRule.Timeout = num;
+                        }
+                        break;
                     case "/f":
                     case "-f":
                     case "/format":
@@ -179,21 +197,6 @@ namespace SyslogDotnet.Cmd
                     case "/severity":
                     case "--severity":
                         collection.Setting.Client.SelectedRule.Severity = args[++i];
-                        break;
-                    case "/i":
-                    case "-i":
-                    case "/ignorecheck":
-                    case "--ignorecheck":
-                        collection.Setting.Client.SelectedRule.IgnoreCheck = true;
-                        break;
-                    case "/o":
-                    case "-o":
-                    case "/timeout":
-                    case "--timeout":
-                        if (int.TryParse(args[++i], out int num))
-                        {
-                            collection.Setting.Client.SelectedRule.Timeout = num;
-                        }
                         break;
                     case "/m":
                     case "-m":

@@ -1,10 +1,12 @@
-﻿
-
-using SyslogDotnet.Cmd;
-
+﻿using SyslogDotnet.Cmd;
+using SyslogDotnet.Cmd.Help;
 
 var collection = ArgsParam.ToSettingCollection(args);
-if (collection.Setting.SubCommand == SyslogDotnet.Lib.Config.SubCommand.Server)
+if(collection == null)
+{
+    HelpContent.Print();
+}
+else if (collection.Setting.SubCommand == SyslogDotnet.Lib.Config.SubCommand.Server)
 {
     using (var udp = collection.Setting.Server.GetUdpServer())
     using (var tcp = collection.Setting.Server.GetTcpServer())
